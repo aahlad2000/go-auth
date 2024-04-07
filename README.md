@@ -19,3 +19,4 @@ gorm - for automatic table creation and db connection
 - To check and validate user
 - Custom expiry date of JWT token
 - To get user details from JWT token
+- To cache the token and send the cached token for duplicate requests
