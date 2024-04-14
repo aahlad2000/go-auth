@@ -12,6 +12,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var cache models.MemoryCache = models.MemoryCache{
+	Cache: make(map[string]interface{}),
+}
+
 func Signup(c *gin.Context) {
 	var body struct {
 		Email    string
@@ -66,7 +70,16 @@ func Login(c *gin.Context) {
 	}
 
 	var user models.User
-	initializers.DB.First(&user, "email = ?", body.Email)
+	email := body.Email
+	initializers.DB.First(&user, "email = ?", email)
+
+	if data, exists := cache.Get(email); exists {
+		c.JSON(http.StatusOK, gin.H{
+			"token": data,
+		})
+
+		return
+	}
 
 	if user.ID == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -100,6 +113,8 @@ func Login(c *gin.Context) {
 
 		return
 	}
+
+	cache.Set(email, tokenString)
 
 	c.JSON(http.StatusOK, gin.H{
 		"token": tokenString,
